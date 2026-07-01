@@ -190,6 +190,22 @@
         text-decoration: underline;
         cursor: pointer;
     }
+
+    .required-message {
+        display: none;
+        margin-top: 12px;
+        padding: 10px 12px;
+        border: 1px solid #f0c36d;
+        border-radius: 6px;
+        background-color: #fff8e1;
+        color: #8a6d3b;
+        font-size: 0.9em;
+        line-height: 1.4;
+    }
+
+    .required-message.active {
+        display: block;
+    }
 </style>
 </head>
 <body>
@@ -219,7 +235,7 @@
                 <input type="checkbox" class="marketing-item" id="newsletter" name="newsletter" checked>
                 <label for="newsletter" class="preference-label">
                     Newsletter
-                    <span class="preference-description">Weekly updates and news from the Mayor's Office of Mass Egagement.</span>
+                    <span class="preference-description">Weekly updates on outreach and community engagement.</span>
                 </label>
             </div>
 
@@ -264,6 +280,8 @@
                 </label>
             </div>
 
+            <p id="service-required-message" class="required-message" role="status" aria-live="polite"></p>
+
             <div class="preference-option">
                 <input type="checkbox" class="service-item" id="calls" name="calls" checked>
                 <label for="calls" class="preference-label">
@@ -302,6 +320,40 @@
                 item.checked = this.checked;
             });
         });
+    });
+
+    const requiredServiceMessage = document.getElementById('service-required-message');
+
+    function showServiceRequirementMessage() {
+        if (requiredServiceMessage) {
+            requiredServiceMessage.textContent = 'At least one of email or text updates is required to coordinate upcoming events. If you do not want to hear from us, you can unsubscribe from all communications.';
+            requiredServiceMessage.classList.add('active');
+        }
+    }
+
+    function hideServiceRequirementMessage() {
+        if (requiredServiceMessage) {
+            requiredServiceMessage.textContent = '';
+            requiredServiceMessage.classList.remove('active');
+        }
+    }
+
+    ['event_emails', 'event_texts'].forEach(id => {
+        const checkbox = document.getElementById(id);
+        if (checkbox) {
+            checkbox.addEventListener('change', function() {
+                const emailCheckbox = document.getElementById('event_emails');
+                const textCheckbox = document.getElementById('event_texts');
+                const bothUnchecked = !emailCheckbox.checked && !textCheckbox.checked;
+
+                if (bothUnchecked) {
+                    this.checked = true;
+                    showServiceRequirementMessage();
+                } else {
+                    hideServiceRequirementMessage();
+                }
+            });
+        }
     });
 
     document.querySelectorAll('.preference-option input[type="checkbox"]:not(.select-all)').forEach(item => {
