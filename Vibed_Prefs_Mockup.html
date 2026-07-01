@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Communications Preference Center</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Poppins', Arial, sans-serif;
+        background-color: #f4f7f6;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    .preference-container {
+        width: 100%;
+        max-width: 600px;
+        margin: 20px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        padding: 40px;
+        text-align: center;
+    }
+
+    .page-header h1 {
+        margin: 0 0 10px 0;
+        font-size: 1.8em;
+        font-weight: 600;
+        color: #1a1a1a;
+    }
+
+    .page-header p.subtitle {
+        margin: 0 0 5px 0;
+        font-size: 1.1em;
+        color: #333;
+    }
+
+    .page-header p.instruction {
+        margin: 0 0 25px 0;
+        font-size: 0.95em;
+        color: #666;
+    }
+
+    .tab-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 25px;
+        background-color: #f0f0f0;
+        border-radius: 8px;
+        padding: 4px;
+        width: 100%;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .tab-button {
+        flex: 1;
+        padding: 10px 20px;
+        border: none;
+        background-color: transparent;
+        font-family: 'Poppins', Arial, sans-serif;
+        font-weight: 600;
+        font-size: 1em;
+        color: #555;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .tab-button.active {
+        background-color: #ffffff;
+        color: #0056b3;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .view-box {
+        background-color: #ffffff;
+        border: 1px solid #eaeaea;
+        border-radius: 8px;
+        padding: 25px;
+        text-align: left;
+        display: none;
+    }
+
+    .view-box.active {
+        display: block; 
+    }
+
+    .view-box h2 {
+        margin: 0 0 20px 0;
+        font-size: 1.4em;
+        font-weight: 600;
+        color: #1a1a1a;
+    }
+
+    .select-all-wrapper {
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eaeaea;
+    }
+
+    .preference-option {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+
+    .preference-label {
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-left: 10px;
+        cursor: pointer;
+    }
+
+    .preference-description {
+        display: block;
+        font-weight: 400;
+        color: #777;
+        font-size: 0.85em;
+        margin-top: 2px;
+    }
+
+    .preference-option input[type="checkbox"] {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        outline: none;
+        transition: background-color 0.1s, border-color 0.1s;
+        margin: 0;
+        flex-shrink: 0;
+        position: relative;
+    }
+
+    .preference-option input[type="checkbox"]:checked {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+
+    .preference-option input[type="checkbox"]:checked::after {
+        content: '\2713';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .action-button-container {
+        margin-top: 30px;
+        text-align: center;
+    }
+
+    .btn-submit {
+        background-color: #0056b3;
+        color: #ffffff;
+        border: none;
+        padding: 12px 30px;
+        font-family: 'Poppins', Arial, sans-serif;
+        font-size: 1.1em;
+        font-weight: 600;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .btn-submit:hover {
+        background-color: #004494;
+    }
+
+    .unsubscribe-link {
+        display: block;
+        margin-top: 15px;
+        font-size: 0.9em;
+        color: #333;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+
+<div class="preference-container">
+    <div class="page-header">
+        <h1>Communications Preference Center</h1>
+        <p class="subtitle">The Mayor's Office of Mass Engagement</p>
+        <p class="instruction">Customize your communication preferences below.</p>
+    </div>
+
+    <div class="tab-container">
+        <button class="tab-button active" onclick="switchTab('marketing')">Marketing</button>
+        <button class="tab-button" onclick="switchTab('service')">Service</button>
+    </div>
+
+    <div class="content-wrapper">
+        <div id="marketing-view" class="view-box active">
+            <h2>Marketing</h2>
+            
+            <div class="select-all-wrapper preference-option">
+                <input type="checkbox" id="all_marketing" class="select-all" data-target="marketing" checked>
+                <label for="all_marketing" class="preference-label">Select All Marketing</label>
+            </div>
+
+            <div class="preference-option">
+                <input type="checkbox" class="marketing-item" id="newsletter" name="newsletter" checked>
+                <label for="newsletter" class="preference-label">
+                    Newsletter
+                    <span class="preference-description">Weekly updates on outreach and community engagement.</span>
+                </label>
+            </div>
+
+            <div class="preference-option">
+                <input type="checkbox" class="marketing-item" id="ome_updates" name="ome_updates" checked>
+                <label for="ome_updates" class="preference-label">
+                    OME Updates
+                    <span class="preference-description">General notifications from the Mayor's Office of Mass Engagement.</span>
+                </label>
+            </div>
+
+            <div class="preference-option">
+                <input type="checkbox" class="marketing-item" id="news" name="news" checked>
+                <label for="news" class="preference-label">
+                    News
+                    <span class="preference-description">Latest civic news and city-wide updates.</span>
+                </label>
+            </div>
+        </div>
+
+        <div id="service-view" class="view-box">
+            <h2>Service</h2>
+            
+            <div class="select-all-wrapper preference-option">
+                <input type="checkbox" id="all_service" class="select-all" data-target="service" checked>
+                <label for="all_service" class="preference-label">Select All Service</label>
+            </div>
+
+            <div class="preference-option">
+                <input type="checkbox" class="service-item" id="event_texts" name="event_texts" checked>
+                <label for="event_texts" class="preference-label">
+                    Event Texts
+                    <span class="preference-description">SMS confirmations and reminders for events.</span>
+                </label>
+            </div>
+
+            <div class="preference-option">
+                <input type="checkbox" class="service-item" id="event_emails" name="event_emails" checked>
+                <label for="event_emails" class="preference-label">
+                    Event Emails
+                    <span class="preference-description">Email confirmations and reminders for events.</span>
+                </label>
+            </div>
+
+            <div class="preference-option">
+                <input type="checkbox" class="service-item" id="calls" name="calls" checked>
+                <label for="calls" class="preference-label">
+                    Calls
+                    <span class="preference-description">Personal calls for critical or specific updates.</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-button-container">
+        <button type="submit" class="btn-submit">Save Preferences</button>
+        <span class="unsubscribe-link">Unsubscribe from all communications</span>
+    </div>
+</div>
+
+<script>
+    function switchTab(tabName) {
+        const buttons = document.querySelectorAll('.tab-button');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        
+        const clickedButton = Array.from(buttons).find(btn => btn.innerText.toLowerCase() === tabName);
+        if (clickedButton) clickedButton.classList.add('active');
+
+        const views = document.querySelectorAll('.view-box');
+        views.forEach(view => view.classList.remove('active'));
+        
+        document.getElementById(tabName + '-view').classList.add('active');
+    }
+
+    document.querySelectorAll('.select-all').forEach(selectAllBox => {
+        selectAllBox.addEventListener('change', function() {
+            const targetGroup = this.getAttribute('data-target');
+            const items = document.querySelectorAll('.' + targetGroup + '-item');
+            items.forEach(item => {
+                item.checked = this.checked;
+            });
+        });
+    });
+
+    document.querySelectorAll('.preference-option input[type="checkbox"]:not(.select-all)').forEach(item => {
+        item.addEventListener('change', function() {
+            const parentGroup = this.className.split('-')[0];
+            const selectAllBox = document.querySelector('.select-all[data-target="' + parentGroup + '"]');
+            
+            if (!this.checked) {
+                selectAllBox.checked = false;
+            } else {
+                const allItems = document.querySelectorAll('.' + parentGroup + '-item');
+                const allChecked = Array.from(allItems).every(i => i.checked);
+                selectAllBox.checked = allChecked;
+            }
+        });
+    });
+</script>
+</body>
+</html>
+
