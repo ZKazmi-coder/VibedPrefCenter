@@ -410,7 +410,7 @@
     if (initialId) {
         document.getElementById('debug_id').value = initialId;
     }
-
+    
     function getUserId() {
         const id = document.getElementById('debug_id').value.trim();
         if (!id) {
@@ -418,6 +418,10 @@
             return null;
         }
         return id;
+    }
+    const initialToken = urlParams.get('token'); 
+    if (initialToken) {
+        document.getElementById('debug_token').value = initialToken;
     }
 
     function getApiToken() {
