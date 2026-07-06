@@ -509,17 +509,9 @@
         if (document.getElementById('event_texts').checked) selectedPermissions.push("Event Texts");
         if (document.getElementById('calls').checked) selectedPermissions.push("Calls");
 
-        // Prepare the payload 
+        // Prepare the payload (Native permissions excluded)
         const payload = {
             email: userEmail,
-            
-            // Map native system permission layers alongside custom property allocations
-            email_permission: document.getElementById('newsletter').checked || 
-                             document.getElementById('ome_updates').checked || 
-                             document.getElementById('news').checked || 
-                             document.getElementById('event_emails').checked,
-            sms_permission: document.getElementById('event_texts').checked,
-            call_permission: document.getElementById('calls').checked,
             
             custom_user_properties: {
                 "communication-permissions": selectedPermissions
@@ -531,7 +523,7 @@
 
         // SAFETY LOCK: Display simulated metadata visually; execution fully intercepted
         displaySimulatedRequest('POST', API_URL, apiToken, payload);
-        alert('Simulation Complete! The full layout of your POST request has been caught and printed to the debug block below for inspection.');
+        alert('Simulation Complete! Request payload generated safely below.');
     });
 
     // Unsubscribe from all communications functionality
@@ -546,11 +538,9 @@
             return;
         }
 
+        // Prepare the payload (Native permissions excluded)
         const payload = {
             email: userEmail,
-            email_permission: false,
-            sms_permission: false,
-            call_permission: false,
             custom_user_properties: {
                 "communication-permissions": []
             },
@@ -562,7 +552,7 @@
         
         // Reflect change locally within UI checkboxes for simulated continuity
         document.querySelectorAll('input[type="checkbox"]').forEach(box => box.checked = false);
-        alert('Simulation Complete! The complete unsubscribe profile changes have been rendered below.');
+        alert('Simulation Complete! Empty custom property profile generated.');
     });
 </script>
 </body>
