@@ -256,6 +256,24 @@
         outline: none;
         border-color: #0056b3;
     }
+
+    .debug-output-container {
+        margin-top: 5px;
+    }
+
+    .debug-output-container pre {
+        background-color: #1e293b;
+        color: #f8fafc;
+        padding: 15px;
+        border-radius: 4px;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.85em;
+        overflow-x: auto;
+        margin: 5px 0 0 0;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        border: 1px solid #0f172a;
+    }
 </style>
 </head>
 <body>
@@ -353,6 +371,10 @@
             <label for="debug_token">Solidarity Tech API Bearer Token</label>
             <input type="text" id="debug_token" placeholder="Paste Bearer Token here for client-side API calls...">
         </div>
+        <div class="debug-output-container">
+            <label style="font-size: 0.85em; color: #475569; font-weight: 600;">Simulated Intercepted Request Payload</label>
+            <pre id="debug_output">No actions performed yet. Click 'Save Preferences' or 'Unsubscribe' to simulate API request formatting.</pre>
+        </div>
     </div>
 </div>
 
@@ -429,7 +451,7 @@
         });
     });
 
-    // --- SOLIDARITY TECH API INTEGRATION ---
+    // --- SOLIDARITY TECH API INTEGRATION (MOCKED/SIMULATED) ---
 
     const API_URL = 'https://api.solidarity.tech/v1/users';
 
@@ -460,6 +482,14 @@
         return token;
     }
 
+    // Helper function to output request visually instead of calling live network channels
+    function displaySimulatedRequest(method, url, token, payload) {
+        const outputElement = document.getElementById('debug_output');
+        const simulatedText = `METHOD: ${method}\nURL: ${url}\n\nHEADERS:\n{\n  "Authorization": "Bearer ${token}",\n  "Content-Type": "application/json"\n}\n\nPAYLOAD BODY:\n${JSON.stringify(payload, null, 2)}`;
+        
+        outputElement.textContent = simulatedText;
+    }
+
     // Save Preferences functionality
     document.querySelector('.btn-submit').addEventListener('click', async (e) => {
         e.preventDefault();
@@ -469,11 +499,6 @@
 
         const apiToken = getApiToken();
         if (!apiToken) return;
-
-        const submitBtn = e.target;
-        const originalText = submitBtn.innerText;
-        submitBtn.innerText = "Saving...";
-        submitBtn.disabled = true;
 
         // Map UI checkboxes straight into the multiple checkboxes array matching custom property options
         const selectedPermissions = [];
@@ -504,30 +529,9 @@
             append_custom_user_properties: false 
         };
 
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (response.ok) {
-                alert('Preferences saved successfully!');
-            } else {
-                const errorData = await response.json();
-                console.error('API Error Response Context:', errorData);
-                alert('Failed to save preferences. Please try again.');
-            }
-        } catch (error) {
-            console.error('API Call Network Error:', error);
-            alert('A network error occurred while updating configurations.');
-        } finally {
-            submitBtn.innerText = originalText;
-            submitBtn.disabled = false;
-        }
+        // SAFETY LOCK: Display simulated metadata visually; execution fully intercepted
+        displaySimulatedRequest('POST', API_URL, apiToken, payload);
+        alert('Simulation Complete! The full layout of your POST request has been caught and printed to the debug block below for inspection.');
     });
 
     // Unsubscribe from all communications functionality
@@ -553,26 +557,12 @@
             append_custom_user_properties: false 
         };
 
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (response.ok) {
-                document.querySelectorAll('input[type="checkbox"]').forEach(box => box.checked = false);
-                alert('You have been successfully unsubscribed from all communications.');
-            } else {
-                alert('Failed to execute complete unsubscribe parameters.');
-            }
-        } catch (error) {
-            console.error('API Call Network Error:', error);
-            alert('A network error occurred.');
-        }
+        // SAFETY LOCK: Display simulated metadata visually; execution fully intercepted
+        displaySimulatedRequest('POST', API_URL, apiToken, payload);
+        
+        // Reflect change locally within UI checkboxes for simulated continuity
+        document.querySelectorAll('input[type="checkbox"]').forEach(box => box.checked = false);
+        alert('Simulation Complete! The complete unsubscribe profile changes have been rendered below.');
     });
 </script>
 </body>
