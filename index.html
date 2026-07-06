@@ -538,13 +538,12 @@
             return;
         }
 
-        // Prepare the payload (Native permissions excluded)
+        // Prepare the payload (Using global native permissions instead of the custom property)
         const payload = {
             email: userEmail,
-            custom_user_properties: {
-                "communication-permissions": []
-            },
-            append_custom_user_properties: false 
+            email_permission: false,
+            sms_permission: false,
+            call_permission: false
         };
 
         // SAFETY LOCK: Display simulated metadata visually; execution fully intercepted
@@ -552,7 +551,7 @@
         
         // Reflect change locally within UI checkboxes for simulated continuity
         document.querySelectorAll('input[type="checkbox"]').forEach(box => box.checked = false);
-        alert('Simulation Complete! Empty custom property profile generated.');
+        alert('Simulation Complete! Global native unsubscribe parameters generated below.');
     });
 </script>
 </body>
