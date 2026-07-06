@@ -364,16 +364,16 @@
     <div class="debug-section">
         <h3>Debug Settings</h3>
         <div class="debug-input-group">
-            <label for="debug_email">Target User Email</label>
-            <input type="text" id="debug_email" placeholder="Enter user email (or load via URL parameter ?email=...)">
+            <label for="debug_id">Target User ID</label>
+            <input type="text" id="debug_id" placeholder="Enter user ID (or load via URL parameter ?id=...)">
         </div>
         <div class="debug-input-group">
             <label for="debug_token">Solidarity Tech API Bearer Token</label>
-            <input type="text" id="debug_token" placeholder="Paste Bearer Token here for client-side API calls...">
+            <input type="text" id="debug_token" placeholder="Paste Bearer Token here...">
         </div>
         <div class="debug-output-container">
             <label style="font-size: 0.85em; color: #475569; font-weight: 600;">Simulated Intercepted Request Payload</label>
-            <pre id="debug_output">No actions performed yet. Click 'Save Preferences' or 'Unsubscribe' to simulate API request formatting.</pre>
+            <pre id="debug_output">No actions performed yet.</pre>
         </div>
     </div>
 </div>
@@ -402,87 +402,33 @@
         });
     });
 
-    const requiredServiceMessage = document.getElementById('service-required-message');
-
-    function showServiceRequirementMessage() {
-        if (requiredServiceMessage) {
-            requiredServiceMessage.textContent = 'At least one of email or text updates is required to coordinate upcoming events. If you do not want to hear from us, you can unsubscribe from all communications.';
-            requiredServiceMessage.classList.add('active');
-        }
-    }
-
-    function hideServiceRequirementMessage() {
-        if (requiredServiceMessage) {
-            requiredServiceMessage.textContent = '';
-            requiredServiceMessage.classList.remove('active');
-        }
-    }
-
-    ['event_emails', 'event_texts'].forEach(id => {
-        const checkbox = document.getElementById(id);
-        if (checkbox) {
-            checkbox.addEventListener('change', function() {
-                const emailCheckbox = document.getElementById('event_emails');
-                const textCheckbox = document.getElementById('event_texts');
-                const bothUnchecked = !emailCheckbox.checked && !textCheckbox.checked;
-
-                if (bothUnchecked) {
-                    this.checked = true;
-                    showServiceRequirementMessage();
-                } else {
-                    hideServiceRequirementMessage();
-                }
-            });
-        }
-    });
-
-    document.querySelectorAll('.preference-option input[type="checkbox"]:not(.select-all)').forEach(item => {
-        item.addEventListener('change', function() {
-            const parentGroup = this.className.split('-')[0];
-            const selectAllBox = document.querySelector('.select-all[data-target="' + parentGroup + '"]');
-            
-            if (!this.checked) {
-                selectAllBox.checked = false;
-            } else {
-                const allItems = document.querySelectorAll('.' + parentGroup + '-item');
-                const allChecked = Array.from(allItems).every(i => i.checked);
-                selectAllBox.checked = allChecked;
-            }
-        });
-    });
-
     // --- SOLIDARITY TECH API INTEGRATION (MOCKED/SIMULATED) ---
-
-    const API_URL = 'https://api.solidarity.tech/v1/users';
 
     // Parse incoming URL query params on initial load
     const urlParams = new URLSearchParams(window.location.search);
-    const initialEmail = urlParams.get('email'); 
-    if (initialEmail) {
-        document.getElementById('debug_email').value = initialEmail;
+    const initialId = urlParams.get('id'); 
+    if (initialId) {
+        document.getElementById('debug_id').value = initialId;
     }
 
-    // Helper to pull the target user email dynamically from the debug text field
-    function getUserEmail() {
-        const email = document.getElementById('debug_email').value.trim();
-        if (!email) {
-            alert("Debug Error: Please specify a Target User Email in the debug settings block.");
+    function getUserId() {
+        const id = document.getElementById('debug_id').value.trim();
+        if (!id) {
+            alert("Debug Error: Please specify a Target User ID.");
             return null;
         }
-        return email;
+        return id;
     }
 
-    // Helper to pull the API Token dynamically from the debug text field
     function getApiToken() {
         const token = document.getElementById('debug_token').value.trim();
         if (!token) {
-            alert("Debug Error: Please input an API Bearer Token in the debug settings block.");
+            alert("Debug Error: Please input an API Bearer Token.");
             return null;
         }
         return token;
     }
 
-    // Helper function to output request visually instead of calling live network channels
     function displaySimulatedRequest(method, url, token, payload) {
         const outputElement = document.getElementById('debug_output');
         const simulatedText = `METHOD: ${method}\nURL: ${url}\n\nHEADERS:\n{\n  "Authorization": "Bearer ${token}",\n  "Content-Type": "application/json"\n}\n\nPAYLOAD BODY:\n${JSON.stringify(payload, null, 2)}`;
@@ -494,13 +440,12 @@
     document.querySelector('.btn-submit').addEventListener('click', async (e) => {
         e.preventDefault();
 
-        const userEmail = getUserEmail();
-        if (!userEmail) return;
+        const userId = getUserId();
+        if (!userId) return;
 
         const apiToken = getApiToken();
         if (!apiToken) return;
 
-        // Map UI checkboxes straight into the multiple checkboxes array matching custom property options
         const selectedPermissions = [];
         if (document.getElementById('newsletter').checked) selectedPermissions.push("Newsletter");
         if (document.getElementById('ome_updates').checked) selectedPermissions.push("OME Updates");
@@ -509,49 +454,39 @@
         if (document.getElementById('event_texts').checked) selectedPermissions.push("Event Texts");
         if (document.getElementById('calls').checked) selectedPermissions.push("Calls");
 
-        // Prepare the payload (Native permissions excluded)
         const payload = {
-            email: userEmail,
-            
             custom_user_properties: {
                 "communication-permissions": selectedPermissions
             },
-            
-            // Replaces absolute property array contents cleanly rather than appending/uniting arrays
             append_custom_user_properties: false 
         };
 
-        // SAFETY LOCK: Display simulated metadata visually; execution fully intercepted
-        displaySimulatedRequest('POST', API_URL, apiToken, payload);
-        alert('Simulation Complete! Request payload generated safely below.');
+        const apiUrl = `https://api.solidarity.tech/v1/users/${userId}`;
+        displaySimulatedRequest('PUT', apiUrl, apiToken, payload);
+        alert('Simulation Complete! PUT request generated for ID: ' + userId);
     });
 
-    // Unsubscribe from all communications functionality
+    // Unsubscribe functionality
     document.querySelector('.unsubscribe-link').addEventListener('click', async () => {
-        const userEmail = getUserEmail();
-        if (!userEmail) return;
+        const userId = getUserId();
+        if (!userId) return;
 
         const apiToken = getApiToken();
         if (!apiToken) return;
 
-        if(!confirm("Are you sure you want to completely unsubscribe from all communications?")) {
-            return;
-        }
+        if(!confirm("Are you sure you want to completely unsubscribe?")) return;
 
-        // Prepare the payload (Using global native permissions instead of the custom property)
         const payload = {
-            email: userEmail,
             email_permission: false,
             sms_permission: false,
             call_permission: false
         };
 
-        // SAFETY LOCK: Display simulated metadata visually; execution fully intercepted
-        displaySimulatedRequest('POST', API_URL, apiToken, payload);
+        const apiUrl = `https://api.solidarity.tech/v1/users/${userId}`;
+        displaySimulatedRequest('PUT', apiUrl, apiToken, payload);
         
-        // Reflect change locally within UI checkboxes for simulated continuity
         document.querySelectorAll('input[type="checkbox"]').forEach(box => box.checked = false);
-        alert('Simulation Complete! Global native unsubscribe parameters generated below.');
+        alert('Simulation Complete! Global unsubscribe PUT request generated.');
     });
 </script>
 </body>
