@@ -206,6 +206,56 @@
     .required-message.active {
         display: block;
     }
+
+    /* --- DEBUG SECTION STYLING --- */
+    .debug-section {
+        margin-top: 40px;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border: 1px dashed #cbd5e1;
+        border-radius: 6px;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .debug-section h3 {
+        margin: 0;
+        font-size: 1em;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+    }
+
+    .debug-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .debug-input-group label {
+        font-size: 0.85em;
+        color: #475569;
+        font-weight: 600;
+    }
+
+    .debug-input-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.9em;
+        box-sizing: border-box;
+        color: #334155;
+    }
+
+    .debug-input-group input:focus {
+        outline: none;
+        border-color: #0056b3;
+    }
 </style>
 </head>
 <body>
@@ -291,6 +341,19 @@
         <button type="submit" class="btn-submit">Save Preferences</button>
         <span class="unsubscribe-link">Unsubscribe from all communications</span>
     </div>
+
+    <!-- --- DEBUG PANEL --- -->
+    <div class="debug-section">
+        <h3>Debug Settings</h3>
+        <div class="debug-input-group">
+            <label for="debug_email">Target User Email</label>
+            <input type="text" id="debug_email" placeholder="Enter user email (or load via URL parameter ?email=...)">
+        </div>
+        <div class="debug-input-group">
+            <label for="debug_token">Solidarity Tech API Bearer Token</label>
+            <input type="text" id="debug_token" placeholder="Paste Bearer Token here for client-side API calls...">
+        </div>
+    </div>
 </div>
 
 <script>
@@ -364,6 +427,152 @@
                 selectAllBox.checked = allChecked;
             }
         });
+    });
+
+    // --- SOLIDARITY TECH API INTEGRATION ---
+
+    const API_URL = 'https://api.solidarity.tech/v1/users';
+
+    // Parse incoming URL query params on initial load
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialEmail = urlParams.get('email'); 
+    if (initialEmail) {
+        document.getElementById('debug_email').value = initialEmail;
+    }
+
+    // Helper to pull the target user email dynamically from the debug text field
+    function getUserEmail() {
+        const email = document.getElementById('debug_email').value.trim();
+        if (!email) {
+            alert("Debug Error: Please specify a Target User Email in the debug settings block.");
+            return null;
+        }
+        return email;
+    }
+
+    // Helper to pull the API Token dynamically from the debug text field
+    function getApiToken() {
+        const token = document.getElementById('debug_token').value.trim();
+        if (!token) {
+            alert("Debug Error: Please input an API Bearer Token in the debug settings block.");
+            return null;
+        }
+        return token;
+    }
+
+    // Save Preferences functionality
+    document.querySelector('.btn-submit').addEventListener('click', async (e) => {
+        e.preventDefault();
+
+        const userEmail = getUserEmail();
+        if (!userEmail) return;
+
+        const apiToken = getApiToken();
+        if (!apiToken) return;
+
+        const submitBtn = e.target;
+        const originalText = submitBtn.innerText;
+        submitBtn.innerText = "Saving...";
+        submitBtn.disabled = true;
+
+        // Map UI checkboxes straight into the multiple checkboxes array matching custom property options
+        const selectedPermissions = [];
+        if (document.getElementById('newsletter').checked) selectedPermissions.push("Newsletter");
+        if (document.getElementById('ome_updates').checked) selectedPermissions.push("OME Updates");
+        if (document.getElementById('news').checked) selectedPermissions.push("News");
+        if (document.getElementById('event_emails').checked) selectedPermissions.push("Event Emails");
+        if (document.getElementById('event_texts').checked) selectedPermissions.push("Event Texts");
+        if (document.getElementById('calls').checked) selectedPermissions.push("Calls");
+
+        // Prepare the payload 
+        const payload = {
+            email: userEmail,
+            
+            // Map native system permission layers alongside custom property allocations
+            email_permission: document.getElementById('newsletter').checked || 
+                             document.getElementById('ome_updates').checked || 
+                             document.getElementById('news').checked || 
+                             document.getElementById('event_emails').checked,
+            sms_permission: document.getElementById('event_texts').checked,
+            call_permission: document.getElementById('calls').checked,
+            
+            custom_user_properties: {
+                "communication-permissions": selectedPermissions
+            },
+            
+            // Replaces absolute property array contents cleanly rather than appending/uniting arrays
+            append_custom_user_properties: false 
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                alert('Preferences saved successfully!');
+            } else {
+                const errorData = await response.json();
+                console.error('API Error Response Context:', errorData);
+                alert('Failed to save preferences. Please try again.');
+            }
+        } catch (error) {
+            console.error('API Call Network Error:', error);
+            alert('A network error occurred while updating configurations.');
+        } finally {
+            submitBtn.innerText = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+
+    // Unsubscribe from all communications functionality
+    document.querySelector('.unsubscribe-link').addEventListener('click', async () => {
+        const userEmail = getUserEmail();
+        if (!userEmail) return;
+
+        const apiToken = getApiToken();
+        if (!apiToken) return;
+
+        if(!confirm("Are you sure you want to completely unsubscribe from all communications?")) {
+            return;
+        }
+
+        const payload = {
+            email: userEmail,
+            email_permission: false,
+            sms_permission: false,
+            call_permission: false,
+            custom_user_properties: {
+                "communication-permissions": []
+            },
+            append_custom_user_properties: false 
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                document.querySelectorAll('input[type="checkbox"]').forEach(box => box.checked = false);
+                alert('You have been successfully unsubscribed from all communications.');
+            } else {
+                alert('Failed to execute complete unsubscribe parameters.');
+            }
+        } catch (error) {
+            console.error('API Call Network Error:', error);
+            alert('A network error occurred.');
+        }
     });
 </script>
 </body>
